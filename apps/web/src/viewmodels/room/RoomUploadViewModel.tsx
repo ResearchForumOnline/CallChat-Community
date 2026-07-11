@@ -45,6 +45,7 @@ import { Action } from "../../dispatcher/actions";
 import type { ComposerInsertFilesPayload } from "../../dispatcher/payloads/ComposerInsertFilePayload";
 import { useDispatcher } from "../../hooks/useDispatcher";
 import type { ActionPayload } from "../../dispatcher/payloads";
+import { prepareCallChatFiles } from "../../utils/callchat/ZMathAuto";
 
 const logger = rootLogger.getChild("RoomUploadViewModel");
 
@@ -145,8 +146,9 @@ export class RoomUploadViewModel
         if (!files?.length) return;
 
         try {
+            const preparedFiles = await prepareCallChatFiles(Array.from(files));
             await ContentMessages.sharedInstance().sendContentListToRoom(
-                Array.from(files),
+                preparedFiles,
                 roomId,
                 this.threadRelation,
                 this.replyToEvent,
@@ -167,8 +169,9 @@ export class RoomUploadViewModel
         if (!dataTransfer.files?.length) return;
 
         try {
+            const preparedFiles = await prepareCallChatFiles(Array.from(dataTransfer.files));
             await ContentMessages.sharedInstance().sendContentListToRoom(
-                Array.from(dataTransfer.files),
+                preparedFiles,
                 roomId,
                 this.threadRelation,
                 this.replyToEvent,
