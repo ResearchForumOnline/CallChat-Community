@@ -10,11 +10,13 @@ interface CallChatZMathBridge {
     isUnlocked(): boolean;
     isMatrixOnly(): boolean;
     prepareFiles(files: File[]): Promise<File[]>;
+    prepareCallSecret(roomId: string): Promise<void>;
 }
 
 declare global {
     interface Window {
         callchatZMathRequired?: boolean;
+        callchatZMathCallRequired?: boolean;
         callchatZMathAuto?: CallChatZMathBridge;
     }
 }
@@ -34,3 +36,20 @@ export async function prepareCallChatFiles(files: File[]): Promise<File[]> {
     return bridge.prepareFiles(files);
 }
 
+/**
+ * Returns the memory-only, room-scoped factor used by CallChat's media E2EE.
+ * Hosted CallChat builds fail closed if the ZMath bridge is absent or locked.
+ */
+export async function prepareRequiredCallChatMedia(roomId: string): Promise<boolean> {
+    const bridge = window.callchatZMathAuto;
+    if (!bridge) {
+        if (window.callchatZMathCallRequired) {
+            throw new Error("ZMath media protection is required but its protection module is unavailable. Call blocked.");
+        }
+        return false;
+    }
+
+    if (!window.callchatZMathCallRequired) return false;
+    await bridge.prepareCallSecret(roomId);
+    return true;
+}

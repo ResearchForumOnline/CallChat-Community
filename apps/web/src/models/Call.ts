@@ -45,6 +45,7 @@ import SdkConfig from "../SdkConfig.ts";
 import DMRoomMap from "../utils/DMRoomMap.ts";
 import { type WidgetMessaging, WidgetMessagingEvent } from "../stores/widgets/WidgetMessaging.ts";
 import { BugReportEndpointURLLocal } from "../IConfigOptions.ts";
+import { prepareRequiredCallChatMedia } from "../utils/callchat/ZMathAuto.ts";
 
 const TIMEOUT_MS = 16000;
 const logger = rootLogger.getChild("models/Call");
@@ -740,7 +741,12 @@ export class ElementCall extends Call {
      * @param opts
      * @returns
      */
-    private static generateWidgetUrl(client: MatrixClient, roomId: string, opts: WidgetGenerationParameters = {}): URL {
+    private static generateWidgetUrl(
+        client: MatrixClient,
+        roomId: string,
+        opts: WidgetGenerationParameters = {},
+        zmathMediaE2EE = false,
+    ): URL {
         const elementCallUrlOverride = SettingsStore.getValue("Developer.elementCallUrl");
         const url = elementCallUrlOverride
             ? new URL(elementCallUrlOverride)
@@ -764,6 +770,8 @@ export class ElementCall extends Call {
         if (typeof opts.skipLobby === "boolean") {
             params.set("skipLobby", opts.skipLobby.toString());
         }
+
+        if (zmathMediaE2EE) params.set("zmathMediaE2EE", "true");
 
         const rageshakeSubmitUrl = SdkConfig.get("bug_report_endpoint_url");
         if (rageshakeSubmitUrl && rageshakeSubmitUrl !== BugReportEndpointURLLocal) {
@@ -894,10 +902,12 @@ export class ElementCall extends Call {
         // Some parameters may only be set once the user has chosen to interact with the call, regenerate the URL
         // at this point in case any of the parameters have changed.
         this.widgetGenerationParameters = { ...this.widgetGenerationParameters, ...widgetGenerationParameters };
+        const zmathMediaE2EE = await prepareRequiredCallChatMedia(this.roomId);
         this.widget.url = ElementCall.generateWidgetUrl(
             this.client,
             this.roomId,
             this.widgetGenerationParameters,
+            zmathMediaE2EE,
         ).toString();
         const widgetApi = await super.start();
         widgetApi.on(`action:${ElementWidgetActions.JoinCall}`, this.onJoin);
