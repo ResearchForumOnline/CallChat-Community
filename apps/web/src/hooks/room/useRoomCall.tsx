@@ -268,7 +268,9 @@ export const useRoomCall = (
             if (widget && promptPinWidget) {
                 WidgetLayoutStore.instance.moveToContainer(room, widget, "top");
             } else {
-                placeCall(room, CallType.Voice, callPlatformType, evt?.shiftKey || undefined, true);
+                void placeCall(room, CallType.Voice, callPlatformType, evt?.shiftKey || undefined, true).catch((error) =>
+                    logger.warn("Call start was blocked", error),
+                );
             }
         },
         [promptPinWidget, room, widget],
@@ -281,7 +283,9 @@ export const useRoomCall = (
             } else {
                 // If we have pressed shift then always skip the lobby, otherwise `undefined` will defer
                 // to the defaults of the call implementation.
-                placeCall(room, CallType.Video, callPlatformType, evt?.shiftKey || undefined, false);
+                void placeCall(room, CallType.Video, callPlatformType, evt?.shiftKey || undefined, false).catch((error) =>
+                    logger.warn("Call start was blocked", error),
+                );
             }
         },
         [widget, promptPinWidget, room],

@@ -14,6 +14,11 @@ Call startup fails closed when the hosted distribution requires ZMath and the
 bridge is absent, locked, or in Matrix-only mode. Community builds that do not
 set `window.callchatZMathCallRequired` keep the standard Element Call behavior.
 
+The hosted configuration enables `feature_group_calls` and sets Element Call
+to exclusive mode so one-to-one calls cannot fall back to the legacy WebRTC
+path. The parent prepares the factor before dispatching the room into call
+view, and the embedded call checks it again before connecting.
+
 The matching media-engine source and cryptographic profile are published in
 the `ResearchForumOnline/element-call` fork. Unmodified Element clients do not
 support this custom call profile. It uses classical cryptography and does not
