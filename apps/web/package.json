@@ -1,7 +1,7 @@
 {
     "name": "element-web",
     "version": "1.12.23",
-    "description": "Element: the future of secure communication",
+    "description": "CallChat Community: a branded Matrix-compatible communications client",
     "author": "New Vector Ltd.",
     "repository": {
         "type": "git",
